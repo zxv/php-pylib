@@ -1,4 +1,5 @@
 <?php
+
 function zip($a, $b) {
     $args = func_get_args();
 
@@ -17,6 +18,18 @@ function zip($a, $b) {
     }
 
     return $final;
+}
+
+function set_trace() {
+    require("phpa-lib.php");
+    echo "\n";
+    __phpa__interactive($GLOBALS);
+}
+
+function dire($thing) {
+    $thing_type = gettype($this);
+
+    #if ($thing_type == "");
 }
 
 ?>
