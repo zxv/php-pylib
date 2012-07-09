@@ -21,15 +21,58 @@ function zip($a, $b) {
 }
 
 function set_trace() {
-    require("phpa-lib.php");
+    require("lib/phpa.php");
     echo "\n";
     __phpa__interactive($GLOBALS);
 }
 
-function dire($thing) {
-    $thing_type = gettype($this);
+function repr($var) {
+    //echo gettype($var);
 
+    if (is_int($var)) {
+        return $var;
+    }
+
+    if (is_null($var)) {
+        return null;
+    }
+
+    if (is_bool($var)) {
+        return ($var ? "true" : "false");
+    }
+
+    if (is_string($var)) {
+        return "'" . addcslashes($var, "\0..\37\177..\377")  . "'";
+    } 
+
+    if (!is_null($var)) {
+        $var = (array) $var;
+        // If array is non-associative, return values
+        if (array_values($var) === $var) {
+            $keys = array_values($var);
+        } else {
+            $keys = array_keys($var);
+        }
+
+        $keys = array_map(function($key) {return repr($key); }, $keys);
+        return '['.join(', ', $keys).']';
+    }
+}
+
+function type($thing)  {
+    return gettype($thing);
+}
+
+function dire($thing=null) {
+    // Oh PHP. Why did you have to define dir()?
+    // What a pathetic namespace conflict :(
+    
     #if ($thing_type == "");
+    if ($thing == null) {
+        return repr($GLOBALS);
+    } else {
+        return $thing;
+    }
 }
 
 ?>

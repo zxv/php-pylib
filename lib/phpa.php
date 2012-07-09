@@ -1,6 +1,11 @@
 <?php
+    require_once(dirname(dirname(__file__))."/py.php");
+    define("__PHPA_PROMPT", ">>> ");
+
     function __phpa__interactive($__phpa_globals=null)
     {
+        $globals_original = $GLOBALS;
+
         // Import passed in vars to local scope
         eval(__phpa__import_globals($__phpa_globals));
 
@@ -21,26 +26,31 @@
             if (strlen($__phpa__line) == 0)
                 continue;
 
-            // 
+            // Add line to history
             if ((!isset($__phpa__hist)) || (($__phpa__line != $__phpa__hist)))
             {
                 readline_add_history($__phpa__line);
                 $__phpa__hist = $__phpa__line;
             }
 
+            //if (strstr("repr\(", $__phpa__line)) {
+            // Remove the repr function call
+            //$__phpa__line = preg_replace('/repr\(/', '', $__phpa__line, 1);
+
+            // Remove only one ocurrence of a ')'
+            //$__phpa__line = preg_replace('/\)/', '', $__phpa__line, 1);
+            //}
+
             if (__phpa__is_immediate($__phpa__line))
                 $__phpa__line = "return ($__phpa__line)";
 
+            //echo "Running $__phpa__line\n";
+            //XXX: dire() calls get quotes on the end
             ob_start();
             $ret = eval("unset(\$__phpa__line); $__phpa__line;");
             if (ob_get_length() == 0)
             {
-                if (is_bool($ret))
-                    echo ($ret ? "true" : "false");
-                else if (is_string($ret))
-                    echo "'" . addcslashes($ret, "\0..\37\177..\377")  . "'";
-                else if (!is_null($ret))
-                    print_r($ret);
+                echo repr($ret);
             }
             unset($ret);
             $out = ob_get_contents();

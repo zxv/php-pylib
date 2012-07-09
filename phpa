@@ -9,7 +9,6 @@
 */
 
     require("lib/phpa.php");
-    define("__PHPA_PROMPT", ">>> ");
 
     __phpa__setup();
     __phpa__print_info();
@@ -27,6 +26,9 @@
 
     // If the name of the running script ends in the expected name
     if ($endOfScript == $phpa_command) {
+        unset($endOfScript);
+        unset($script_name);
+        unset($phpa_command);
         // Invoke the interactive prompt
         __phpa__interactive();
     }
