@@ -20,15 +20,20 @@ function inspect_object($var) {
 }
 
 function set_trace_error($code, $msg, $file, $line, $context) {
+    $stdout = fopen('php://stdout', 'w');
+
     if ($code == 1024) {
         //$bt = debug_bactrace();
-        $err = array($code, $msg, $file, $line);
-        $context["err"] = $err;
+        //$err = array($code, $msg, $file, $line);
+        //$context["err"] = $err;
         set_trace_run($context);
         return true;
     }
-    
-    echo error_get_last();
+
+    //fwrite($stdout, error_get_last());
+    // If the error is one that we didn't mean to catch, throw an
+    // exception.
+    throw new ErrorException($msg, 0, $code, $file, $line);
 
 }
 

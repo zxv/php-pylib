@@ -2,13 +2,21 @@
     require_once(dirname(dirname(__file__))."/py.php");
     define("__PHPA_PROMPT", ">>> ");
 
-    // TODO, run the repl in a subprocess that passes in
+    // TODO: 
+    // run the repl in a subprocess that passes in
     // all local variables from the prior subprocess
     //__phpa__persist();
+    //
+    // TODO:
+    // Figure out a way to access the object context
+    //
+    // XXX:
+    // Segmentation fault after ^Cing from php -S session?
 
     function __phpa__interactive($__phpa__globals=null)
     {
         $globals_original = $GLOBALS;
+        $stdout = fopen('php://stdout', 'w');
 
         // Import passed in vars to local scope
         if ($__phpa__globals != null) {
@@ -64,7 +72,7 @@
             ob_end_clean();
             if ((strlen($out) > 0) && (substr($out, -1) != "\n"))
                 $out .= "\n";
-            echo $out;
+            fwrite($stdout, $out);
             unset($out);
         }
     }
