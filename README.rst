@@ -7,5 +7,5 @@ functionality baked in to Python. It is a work in progress.
 
 Goodies
 =======
-set_trace() - invoke an interactive prompt
-zip($a, $b) - return an array of paired values from arrays $a and $b
+- set_trace() - invoke an interactive prompt
+- zip($a, $b) - return an array of paired values from arrays $a and $b
