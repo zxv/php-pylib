@@ -1,4 +1,5 @@
 <?php
+require_once("lib/helpers.php");
 
 function zip($a, $b) {
     $args = func_get_args();
@@ -21,9 +22,22 @@ function zip($a, $b) {
 }
 
 function set_trace() {
-    require("lib/phpa.php");
-    echo "\n";
-    __phpa__interactive($GLOBALS);
+    // Nothing equivalent that can be placed in here yet.
+    // For the moment, two steps must be executed:
+    // 1. At the begining of your project: set_error_handler("set_trace_error");
+    // 2. At the location where you'd like to set trace: trigger_error("", 1024);
+}
+
+function len($var) {
+    if (is_array($var)) {
+        return count($var);
+    } 
+    if (is_string($var)) {
+        return strlen($var);
+    }
+
+    $type = gettype($var);
+    return "Error: variable of type '$type' has no len()";
 }
 
 function repr($var) {
@@ -45,17 +59,38 @@ function repr($var) {
         return "'" . addcslashes($var, "\0..\37\177..\377")  . "'";
     } 
 
+    if (is_object($var)) {
+        return inspect_object($var);
+    }
+
     if (!is_null($var)) {
         $var = (array) $var;
         // If array is non-associative, return values
         if (array_values($var) === $var) {
-            $keys = array_values($var);
+            $items = array_values($var);
+            $items = array_map(function($item) {return repr($item); }, $items);
+
+            $join_char = ', ';
+            $outer_chars = array("[", "]");
         } else {
-            $keys = array_keys($var);
+            $items = array();
+            $var_export = var_export($var, true);
+            $var_export = explode("\n", $var_export);
+
+            $last = len($var_export) - 1;
+            for ($i=1; $i < $last; $i++) {
+                $items[] = trim($var_export[$i]);
+            }
+            
+            $last = last_key($items);
+            $it = rtrim($items[$last], ",");
+            $items[$last] = $it;
+
+            $join_char = " ";
+            $outer_chars = array("array(", ")");
         }
 
-        $keys = array_map(function($key) {return repr($key); }, $keys);
-        return '['.join(', ', $keys).']';
+        return $outer_chars[0].join($join_char, $items).$outer_chars[1];
     }
 }
 
@@ -63,15 +98,15 @@ function type($thing)  {
     return gettype($thing);
 }
 
-function dire($thing=null) {
+function dig($thing=null) {
     // Oh PHP. Why did you have to define dir()?
     // What a pathetic namespace conflict :(
     
     #if ($thing_type == "");
     if ($thing == null) {
-        return repr($GLOBALS);
+        return array_merge(array_keys($GLOBALS));
     } else {
-        return $thing;
+        return array_keys($thing);
     }
 }
 

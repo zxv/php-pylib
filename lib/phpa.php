@@ -2,12 +2,17 @@
     require_once(dirname(dirname(__file__))."/py.php");
     define("__PHPA_PROMPT", ">>> ");
 
-    function __phpa__interactive($__phpa_globals=null)
+    // TODO, run the repl in a subprocess that passes in
+    // all local variables from the prior subprocess
+    //__phpa__persist();
+
+    function __phpa__interactive($__phpa__globals=null)
     {
         $globals_original = $GLOBALS;
 
         // Import passed in vars to local scope
-        eval(__phpa__import_globals($__phpa_globals));
+        __phpa__import_globals($__phpa__globals);
+        extract($__phpa__globals);
 
         for (;;)
         {
@@ -70,7 +75,8 @@
                 $vars[] = "$".$key;
             }
 
-            return "global ".join(",", $vars).";";
+            eval("global ".join(",", $vars).";");
+            
         }
 
         return false;
@@ -176,5 +182,10 @@
             ob_end_clean();
         ob_implicit_flush(true);
     }
+
+    //function __phpa__persist()
+    //{
+    //    set_exit_overload(function() { __phpa__interactive(); });
+    //}
 
 ?>
