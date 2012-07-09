@@ -11,8 +11,10 @@
         $globals_original = $GLOBALS;
 
         // Import passed in vars to local scope
-        __phpa__import_globals($__phpa__globals);
-        extract($__phpa__globals);
+        if ($__phpa__globals != null) {
+            __phpa__import_globals($__phpa__globals);
+            extract($__phpa__globals);
+        }
 
         for (;;)
         {

@@ -41,8 +41,6 @@ function len($var) {
 }
 
 function repr($var) {
-    //echo gettype($var);
-
     if (is_int($var)) {
         return $var;
     }
@@ -60,7 +58,8 @@ function repr($var) {
     } 
 
     if (is_object($var)) {
-        return inspect_object($var);
+        $cls = get_class($var);
+        return "<$cls object>";
     }
 
     if (!is_null($var)) {
@@ -101,6 +100,13 @@ function type($thing)  {
 function dig($thing=null) {
     // Oh PHP. Why did you have to define dir()?
     // What a pathetic namespace conflict :(
+    if (is_object($thing)) {
+        $inspect = inspect_object($thing);
+        // XXX: Extra echo
+        echo repr($inspect);
+        return $inspect;
+    }
+
     
     #if ($thing_type == "");
     if ($thing == null) {

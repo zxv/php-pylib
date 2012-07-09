@@ -16,8 +16,7 @@ function inspect_object($var) {
     $ref = new ReflectionClass($class);
     $methods = $ref->getMethods();
     $properties = $ref->getProperties();
-
-    return repr(array_merge(getRefNames($methods), getRefNames($properties)));
+    return array_merge(getRefNames($methods), getRefNames($properties));
 }
 
 function set_trace_error($code, $msg, $file, $line, $context) {
