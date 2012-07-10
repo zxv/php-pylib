@@ -3,16 +3,17 @@
     define("__PHPA_PROMPT", ">>> ");
 
     // TODO: 
-    // run the repl in a subprocess that passes in
-    // all local variables from the prior subprocess
-    //__phpa__persist();
-    //
-    // TODO:
-    // Figure out a way to access the object context
+    // Do some token checking to ensure that certain annoying
+    // situations are avoided. For instance:
+    // - Cannot access protected properties
+    // - Cannot redeclare class
     //
     // XXX:
-    // Segmentation fault after ^Cing from php -S session?
-
+    // Segmentation fault: 
+    // 1. php -S localhost:8080
+    // 2. Start trace, ^D
+    // 3. Refresh in browser
+    //
     function __phpa__interactive($__phpa__globals=null)
     {
         $globals_original = $GLOBALS;

@@ -37,7 +37,7 @@ function len($var) {
     }
 
     $type = gettype($var);
-    return "Error: variable of type '$type' has no len()";
+    throw new Exception("Error: variable of type '$type' has no len()");
 }
 
 function repr($var) {
@@ -97,11 +97,11 @@ function type($thing)  {
     return gettype($thing);
 }
 
-function dig($thing=null) {
+function dig($thing=null, $show_privates=true) {
     // Oh PHP. Why did you have to define dir()?
     // What a pathetic namespace conflict :(
     if (is_object($thing)) {
-        $inspect = inspect_object($thing);
+        $inspect = inspect_object($thing, $show_privates);
         // XXX: Extra echo
         echo repr($inspect);
         return $inspect;
