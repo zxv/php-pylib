@@ -44,10 +44,13 @@ function set_trace_error($code, $msg, $file, $line, $context) {
         // hack to access last active object
         foreach ($backtrace as $key => $debugItem) {
             if ($debugItem['function'] == "trigger_error") {
-                $next = $backtrace[$key + 1];
-                if (array_key_exists("object", $next)) {
-                    // Assign the discovered object's instance to "$that"
-                    $context["that"] = $next['object'];
+                for ($i=$key+1; $i<count($backtrace); $i++) {
+                    $next = $backtrace[$i];
+                    if (array_key_exists("object", $next)) {
+                        // Assign the discovered object's instance to "$that"
+                        $context["that"] = $next['object'];
+                        break;
+                    }
                 }
                 break;
             }
