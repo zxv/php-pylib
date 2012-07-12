@@ -40,7 +40,7 @@ function len($var) {
     throw new Exception("Error: variable of type '$type' has no len()");
 }
 
-function repr($var) {
+function repr($var, $digging=false) {
     if (is_int($var)) {
         return $var;
     }
@@ -54,6 +54,47 @@ function repr($var) {
     }
 
     if (is_string($var)) {
+        // Function
+        if (function_exists($var) && $digging==false) {
+            $builtin = "";
+            // TODO: Check if functions are built in by comparing
+            // against an initialized list of them from beginning of script
+            //if (in_array($var, $__phpa__builtin__functions)) {
+            //    $builtin = "built-in ";
+            //}
+
+            return "<{$builtin}function $var>";
+        }
+
+        // Method
+        if (strstr($var, '->')) {
+            // This is redundant, since it's already performed on the 
+            // phpa side. Must refactor this sometime.
+            $objsplit = __phpa__split__object($var);
+
+            $obj = $objsplit['object'];
+            $method = $objsplit['method'];
+            $class = get_class($obj);
+
+            if (method_exists($obj, $method)) {
+                $refMethod = new ReflectionMethod($class, $method);
+                if ($refMethod->isPublic()) {
+                    $visibility = "public";
+                } else if ($refMethod->isProtected()) { 
+                    $visibility = "protected";
+                } else {
+                    $visibility = "private";
+                }
+
+                return "<$visibility method $method in $class object>";
+            }
+        }
+
+        if (in_array($var, get_declared_classes()) && $digging==false) {
+            return "<class $var>";
+        }
+
+        // String
         return "'" . addcslashes($var, "\0..\37\177..\377")  . "'";
     } 
 
@@ -103,13 +144,12 @@ function dig($thing=null, $show_privates=true) {
     if (is_object($thing)) {
         $inspect = inspect_object($thing, $show_privates);
         // XXX: Extra echo
-        echo repr($inspect);
+        echo repr($inspect, true);
         return $inspect;
     }
-
     
     #if ($thing_type == "");
-    if ($thing == null) {
+    if (!isset($thing)) {
         return array_merge(array_keys($GLOBALS));
     } else {
         return array_keys($thing);

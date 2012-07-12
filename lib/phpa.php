@@ -3,10 +3,15 @@
     define("__PHPA_PROMPT", ">>> ");
 
     // TODO: 
+    // Add function/method/class repr
+    //
     // Do some token checking to ensure that certain annoying
     // situations are avoided. For instance:
     // - Cannot access protected properties
     // - Cannot redeclare class
+    // - Call to undefined method
+    // - Missing argument 1 for Classname
+    // - __construct() expects at least 1 parameter, 0 given
     //
     // XXX:
     // Segmentation fault: 
@@ -56,25 +61,45 @@
             // Remove only one ocurrence of a ')'
             //$__phpa__line = preg_replace('/\)/', '', $__phpa__line, 1);
             //}
-
-            if (__phpa__is_immediate($__phpa__line))
-                $__phpa__line = "return ($__phpa__line)";
-
-            //echo "Running $__phpa__line\n";
-            //XXX: dire() calls get quotes on the end
-            ob_start();
-            $ret = eval("unset(\$__phpa__line); $__phpa__line;");
-            if (ob_get_length() == 0)
-            {
+            
+            // The following if statement is ugly and must die
+            // Please refactor me!
+            if (__phpa__is__special($__phpa__line)) {
+                ob_start();
+                $ret = $__phpa__line;
                 echo repr($ret);
+            } else {
+                if (__phpa__is_immediate($__phpa__line)) {
+                    $__phpa__line = "return ($__phpa__line)";
+                }
+
+                //XXX: dig() calls get quotes on the end
+                ob_start();
+
+                $ret = eval("unset(\$__phpa__line); $__phpa__line;");
+                if (ob_get_length() == 0) {
+                   echo repr($ret);
+                }
             }
             unset($ret);
+
             $out = ob_get_contents();
             ob_end_clean();
+
             if ((strlen($out) > 0) && (substr($out, -1) != "\n"))
                 $out .= "\n";
             fwrite($stdout, $out);
             unset($out);
+
+            // Assign all defined variables to the global scope.
+            // This is used (currently) to check if queried class
+            // methods actually exist.
+            // XXX: Global pollution?
+            $vars = get_defined_vars();
+            foreach($vars as $key => $var) {
+                $GLOBALS[$key] = $var;
+            }
+            unset($vars); unset($key); unset($keys);
         }
     }
 
@@ -88,6 +113,50 @@
 
             eval("global ".join(",", $vars).";");
             
+        }
+
+        return false;
+    }
+
+    function __phpa__is__special($var) {
+
+        // Function call
+        if (strstr($var, "(")) {
+            return false;
+        }
+
+        // Function name
+        if (function_exists($var)) {
+            return true;
+        }
+
+        // Method
+        $objsplit = __phpa__split__object($var);
+        if ($objsplit != false)  {
+            return method_exists($objsplit['object'], $objsplit['method']);
+        }
+
+        // Class
+        if (in_array($var, get_declared_classes())) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function __phpa__split__object($query) {
+        // Given a string joined by -> ops, return
+        // an object and a method
+        
+        $parts = explode("->", $query);
+        if ((count($parts) > 1)) { 
+            $method = array_pop($parts);
+            $object = ltrim(implode("->", $parts), "$");
+            global $$object;
+
+            // Bring the object from the repl scope
+            // to here, for evaluation
+            return array("object" => $$object, "method" => $method);
         }
 
         return false;
